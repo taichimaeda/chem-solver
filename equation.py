@@ -104,10 +104,19 @@ class Equation:
         :rtype: list(list<int>)
         """
         matrix = self.matrix
+        matrix_height = matrix_width = len(matrix)
 
-        for i in range(len(self.matrix)):
-            pivot = matrix[i][i]
+        # find pivot for each line
+        for i in range(matrix_height):
+            # find the largest pivot
+            pivot = max(matrix[j][i] for j in range(matrix_height))
 
+            # note: using j again
+            # for each line
+            for j in range(matrix_height - (i + 1)):
+                # for each number
+                for k in range(matrix_width):
+                    
 
     def get_answers(self):
         pass

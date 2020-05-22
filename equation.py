@@ -92,7 +92,7 @@ class Equation:
         # todo: delete test
         print('matrix: ', matrix)
 
-    def gauss_eleiminte(self):
+    def gauss_eleiminte(self, matrix):
         """
         Converts the matrix to a unit matrix by gauss elimination
 
@@ -103,20 +103,69 @@ class Equation:
         :return: unit_matrix
         :rtype: list(list<int>)
         """
+        # todo: remove arg matrix and comment out below after test is finished
+        #matrix = self.matrix
+        matrix_height = matrix_width = len(matrix)
+
+        # forward elimination
+        # find pivot for each line
+        for i in range(matrix_height):
+            # find the pivot
+            temp = [matrix[j][i] for j in range(matrix_height)]
+            pivot_index = temp.index(max(temp))
+            # swap lines
+            matrix[i], matrix[pivot_index] = matrix[pivot_index], matrix[i]
+
+            # for each line (go down from pivot with j)
+            for j in range(i + 1, matrix_height):
+                coeff = -(matrix[j][0] / matrix[i][i])
+                # for each element (go across with k)
+                for k in range(matrix_width):
+                    matrix[j][k] += coeff * matrix[i][k]
+
+        # backward elimination (i and j decrements each time)
+        for i in range(matrix_height - 1, 0, -1):
+            # for each line (go up from pivot with j)
+            for j in range(matrix_height - 1, 0, -1):
+                coeff = -(matrix[j][matrix_width - 1] / matrix[i][i])
+                # for each element (go across with k)
+                for k in range(matrix_width):
+                    matrix[j][k] += coeff * matrix[i][k]
+
+        # set to member variable
+        self.matrix = matrix
+
+        # todo: delete test
+        print(matrix)
+
+    def get_answers(self):
+        """
+        Gets answers
+
+        :return:
+        """
+        reactants, products = self.reactants, self.products
+        reactants_length, products_length = len(reactants), len(products)
         matrix = self.matrix
         matrix_height = matrix_width = len(matrix)
 
-        # find pivot for each line
+        answers = []
         for i in range(matrix_height):
-            # find the largest pivot
-            pivot = max(matrix[j][i] for j in range(matrix_height))
+            answer = matrix[i][0] / matrix[i][i]
+            answers.append(answer)
 
-            # note: using j again
-            # for each line
-            for j in range(matrix_height - (i + 1)):
-                # for each number
-                for k in range(matrix_width):
-                    
+        # stringify
+        output_str = ''
+        for i in range(reactants_length):
+            output_str += f"{answers[i]}{reactants[i]} + "
 
-    def get_answers(self):
-        pass
+        # remove the last ' + ' bit
+        output_str = re.sub(r'\s\+\s$', '', output_str)
+        output_str += '= '
+
+        # todo: this one also needs to be refactored somehow it's ugly
+        for i in range(reactants_length, reactants_length + products_length):
+            output_str += f"{answers[i]}{products[i]} + "
+
+        # remove the last ' + ' bit
+        output_str = re.sub(r'\s\+\s$', '', output_str)

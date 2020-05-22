@@ -6,6 +6,9 @@ def main():
 
     equation.parse_string()
     equation.create_matrix()
+    #equation.gauss_eleiminte()
+
+    #print(equation.get_answers())
 
 
 if __name__ == '__main__':

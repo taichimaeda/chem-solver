@@ -1,5 +1,5 @@
-import math
 import re
+from util import *
 
 
 class Equation:
@@ -77,10 +77,6 @@ class Equation:
 
         # set matrix using the above function
         matrix = []
-
-        # initialize matrix
-        #matrix = [[0 for _ in range(matrix_width)] for _ in range(matrix_height)]
-
         for elem in all_elems:
             matrix_line = get_matrix_halfline(elem, reactants, len(reactants))
             # each line of matrix stands for LHS of an equation whose sum is zero, so revert the sign for products
@@ -103,40 +99,84 @@ class Equation:
         :return: unit_matrix
         :rtype: list(list<int>)
         """
+        # todo: debug method with arg matrix
         # todo: remove arg matrix and comment out below after test is finished
         #matrix = self.matrix
-        matrix_height = matrix_width = len(matrix)
+        matrix_height = len(matrix)
+        matrix_width = matrix_height + 1
 
         # forward elimination
         # find pivot for each line
         for i in range(matrix_height):
-            # find the pivot
-            temp = [matrix[j][i] for j in range(matrix_height)]
-            pivot_index = temp.index(max(temp))
-            # swap lines
-            matrix[i], matrix[pivot_index] = matrix[pivot_index], matrix[i]
+
+            # todo: delete test
+            print('-------- current row:', i)
+            for line in matrix:
+                print(line)
+
+            # find the pivot if the current one is zero
+            if matrix[i][i] == 0:
+                temp = [matrix[j][i] for j in range(matrix_height)]
+                temp = list(map(lambda x: abs(x), temp))
+                pivot_index = temp.index(max(temp))
+                # swap lines
+                matrix[i], matrix[pivot_index] = matrix[pivot_index], matrix[i]
+
+            # todo: delete test
+            print('------- after swapping:')
+            for line in matrix:
+                print(line)
 
             # for each line (go down from pivot with j)
             for j in range(i + 1, matrix_height):
-                coeff = -(matrix[j][0] / matrix[i][i])
-                # for each element (go across with k)
-                for k in range(matrix_width):
-                    matrix[j][k] += coeff * matrix[i][k]
+                # avoid zero division error just in case
+                if not matrix[i][i] == 0 and not matrix[j][i] == 0:
+                    # find gcd first in order to get integer solutions
+                    # using calc.lcm from util module
+                    coeff_lcm = calc.lcm(matrix[j][i], matrix[i][i])
+                    coeff_pivot = -(coeff_lcm // matrix[i][i])
+                    coeff_target = (coeff_lcm // matrix[j][i])
+                    # for each element (go across with k)
+                    for k in range(matrix_width):
+                        matrix[j][k] = coeff_target * matrix[j][k] + coeff_pivot * matrix[i][k]
+                    print('')
+
+        # todo: delete test
+        print('')
+        print('------- final:')
+        for line in matrix:
+            print(line)
 
         # backward elimination (i and j decrements each time)
         for i in range(matrix_height - 1, 0, -1):
+
+            # todo: delete test
+            print('')
+            print('-------- current row:', i)
+            for line in matrix:
+                print(line)
+
             # for each line (go up from pivot with j)
-            for j in range(matrix_height - 1, 0, -1):
-                coeff = -(matrix[j][matrix_width - 1] / matrix[i][i])
-                # for each element (go across with k)
-                for k in range(matrix_width):
-                    matrix[j][k] += coeff * matrix[i][k]
+            for j in range(matrix_height - 2, 0, -1):
+                # avoid zero division error just in case
+                if not matrix[i][i] == 0 and not matrix[j][matrix_width - 1] == 0:
+                    coeff = -(matrix[j][matrix_width - 1] // matrix[i][i])
+
+                    print('i', i)
+                    print('target matrix', matrix[j][j])
+                    print('pivot', matrix[i][i])
+                    # for each element (go across with k)
+                    for k in range(matrix_width):
+                        matrix[j][k] += coeff * matrix[i][k]
 
         # set to member variable
         self.matrix = matrix
 
         # todo: delete test
-        print(matrix)
+        print('')
+        print('------- final:')
+        for line in matrix:
+            print(line)
 
     def get_answers(self):
         """
@@ -144,14 +184,16 @@ class Equation:
 
         :return:
         """
+        # access members
         reactants, products = self.reactants, self.products
         reactants_length, products_length = len(reactants), len(products)
         matrix = self.matrix
-        matrix_height = matrix_width = len(matrix)
+        matrix_height = len(matrix)
+        matrix_width = matrix_height + 1
 
         answers = []
         for i in range(matrix_height):
-            answer = matrix[i][0] / matrix[i][i]
+            answer = matrix[i][0] // matrix[i][i]
             answers.append(answer)
 
         # stringify

@@ -5,7 +5,6 @@ def gcd(a, b):
     :type a: int
     :type b: int
     rtype: int
-    asa
     """
     while b != 0:
         a, b = b, a % b

@@ -186,26 +186,44 @@ class Equation:
         """
         # access members
         matrix = self.matrix
+        matrix_height = len(matrix)
+        matrix_width = matrix_height + 1
         reactants, products = self.reactants, self.products
 
+        coeff_lcm = calc.lcm(
+            *[matrix[i][i] for i in range(matrix_height)]
+        )
+        coeff_gcd = calc.gcd(
+            *[matrix[i][matrix_width - 1] for i in range(matrix_height)]
+        )
+
         answers = []
-        for i in range(len(matrix)):
-            answer = matrix[i][0] // matrix[i][i]
+        for i in range(matrix_height):
+            matrix[i][matrix_width - 1] = (matrix[i][matrix_width - 1] // coeff_gcd) * coeff_lcm
+
+            answer = -(matrix[i][matrix_width - 1] // matrix[i][i])
             answers.append(answer)
+        # the substituted variable = 1
+        answers.append(1)
 
-        # stringify
-        output_str = ''
-        for i in range(len(reactants)):
-            output_str += f"{answers[i]}{reactants[i]} + "
+        # todo: delete test
+        print(answers)
 
-        # remove the last ' + ' bit
-        output_str = re.sub(r'\s\+\s$', '', output_str)
-        output_str += '= '
+        def stringify_output(answers):
+            output_str = ''
+            for i in range(len(reactants)):
+                output_str += f"{answers[i]}{reactants[i]} + "
 
-        for i in range(len(products)):
-            output_str += f"{answers[i]}{products[i]} + "
-        # remove the last ' + ' bit
+            # remove the last ' + ' bit
+            output_str = re.sub(r'\s\+\s$', '', output_str)
+            output_str += '= '
 
-        output_str = re.sub(r'\s\+\s$', '', output_str)
+            for i in range(len(products)):
+                output_str += f"{answers[len(reactants) + i]}{products[i]} + "
+            # remove the last ' + ' bit
 
-        return output_str
+            output_str = re.sub(r'\s\+\s$', '', output_str)
+
+            return output_str
+
+        return stringify_output(answers)

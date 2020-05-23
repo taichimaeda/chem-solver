@@ -2,6 +2,7 @@ import re
 from util import *
 
 
+# todo: this class needs to be split into modules later
 class Equation:
     def __init__(self, input_str):
         self.input_str = input_str
@@ -88,21 +89,16 @@ class Equation:
         # todo: delete test
         print('matrix: ', matrix)
 
-    def gauss_eleiminte(self, matrix):
+    def gauss_eleiminte(self):
         """
         Converts the matrix to a unit matrix by gauss elimination
-
-        note chemical equations have indeterminate solutions
-        so pivoting and substitute some number to one of the variables (parameters)
-        are necessary (in this case substitute 1 to the rightmost variables)
 
         :return: unit_matrix
         :rtype: list(list<int>)
         """
-        # todo: debug method with arg matrix
-        # todo: remove arg matrix and comment out below after test is finished
-        #matrix = self.matrix
+        matrix = self.matrix
         matrix_height = len(matrix)
+        # note the matrix is extended so its width is 1 greater than its height
         matrix_width = matrix_height + 1
 
         # forward elimination
@@ -110,6 +106,7 @@ class Equation:
         for i in range(matrix_height):
 
             # todo: delete test
+            print('')
             print('-------- current row:', i)
             for line in matrix:
                 print(line)
@@ -139,7 +136,6 @@ class Equation:
                     # for each element (go across with k)
                     for k in range(matrix_width):
                         matrix[j][k] = coeff_target * matrix[j][k] + coeff_pivot * matrix[i][k]
-                    print('')
 
         # todo: delete test
         print('')
@@ -147,8 +143,9 @@ class Equation:
         for line in matrix:
             print(line)
 
-        # backward elimination (i and j decrements each time)
-        for i in range(matrix_height - 1, 0, -1):
+        # backward elimination
+        # from the bottom up to index 0 (excluding end point -1)
+        for i in range(matrix_height - 1, -1, -1):
 
             # todo: delete test
             print('')
@@ -156,18 +153,21 @@ class Equation:
             for line in matrix:
                 print(line)
 
-            # for each line (go up from pivot with j)
-            for j in range(matrix_height - 2, 0, -1):
+            # for each line (go up from pivot (matrix[i][i]) with j)
+            for j in range(i - 1, -1, -1):
                 # avoid zero division error just in case
-                if not matrix[i][i] == 0 and not matrix[j][matrix_width - 1] == 0:
-                    coeff = -(matrix[j][matrix_width - 1] // matrix[i][i])
+                if not matrix[i][i] == 0 and not matrix[j][i] == 0:
+                    coeff_lcm = calc.lcm(matrix[j][i], matrix[i][i])
+                    coeff_pivot = -(coeff_lcm // matrix[i][i])
+                    coeff_target = (coeff_lcm // matrix[j][i])
 
-                    print('i', i)
-                    print('target matrix', matrix[j][j])
+                    print('i', i, 'j', j)
+                    print('target matrix', matrix[j][i])
                     print('pivot', matrix[i][i])
+                    print('coeff_target', coeff_target, 'coeff_pivot', coeff_pivot)
                     # for each element (go across with k)
                     for k in range(matrix_width):
-                        matrix[j][k] += coeff * matrix[i][k]
+                        matrix[j][k] = coeff_target * matrix[j][k] + coeff_pivot * matrix[i][k]
 
         # set to member variable
         self.matrix = matrix
@@ -185,29 +185,27 @@ class Equation:
         :return:
         """
         # access members
-        reactants, products = self.reactants, self.products
-        reactants_length, products_length = len(reactants), len(products)
         matrix = self.matrix
-        matrix_height = len(matrix)
-        matrix_width = matrix_height + 1
+        reactants, products = self.reactants, self.products
 
         answers = []
-        for i in range(matrix_height):
+        for i in range(len(matrix)):
             answer = matrix[i][0] // matrix[i][i]
             answers.append(answer)
 
         # stringify
         output_str = ''
-        for i in range(reactants_length):
+        for i in range(len(reactants)):
             output_str += f"{answers[i]}{reactants[i]} + "
 
         # remove the last ' + ' bit
         output_str = re.sub(r'\s\+\s$', '', output_str)
         output_str += '= '
 
-        # todo: this one also needs to be refactored somehow it's ugly
-        for i in range(reactants_length, reactants_length + products_length):
+        for i in range(len(products)):
             output_str += f"{answers[i]}{products[i]} + "
-
         # remove the last ' + ' bit
+
         output_str = re.sub(r'\s\+\s$', '', output_str)
+
+        return output_str

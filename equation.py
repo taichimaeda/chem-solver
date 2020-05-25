@@ -1,8 +1,11 @@
 import re
+# load gcd and lcm modules in ./util/calc
 from util import *
 
 
+# todo: rewrite the code into js to publish online (maybe)
 # todo: this class needs to be split into modules later
+# todo: some of the member variables and local variables are managed inappropriately needs some support
 class Equation:
     def __init__(self, input_str):
         self.input_str = input_str
@@ -56,9 +59,15 @@ class Equation:
         # todo: delete test
         print('all_elems:', all_elems)
 
-        # function to get matrix by half: reactants and then products
-        def get_matrix_halfline(elem, comps, length):
-            matrix_halfline = [0 for _ in range(length)]
+        def get_matrix_halfline(elem, comps):
+            """
+            function to get matrix by half: reactants and then products
+
+            :param elem: target element from all_elems
+            :param comps: either reactants or products
+            :return: matrix_halfline
+            """
+            matrix_halfline = [0 for _ in range(len(comps))]
 
             # for each compounds either in reactants or products
             for comp_index, comp in enumerate(comps):
@@ -79,13 +88,14 @@ class Equation:
         # set matrix using the above function
         matrix = []
         for elem in all_elems:
-            matrix_line = get_matrix_halfline(elem, reactants, len(reactants))
+            matrix_line = get_matrix_halfline(elem, reactants)
             # each line of matrix stands for LHS of an equation whose sum is zero, so revert the sign for products
-            matrix_line.extend(map(lambda x: -x, get_matrix_halfline(elem, products, len(products))))
+            matrix_line.extend(map(lambda x: -x, get_matrix_halfline(elem, products)))
             matrix.append(matrix_line)
 
         # set to member variable
         self.matrix = matrix
+
         # todo: delete test
         print('matrix: ', matrix)
 
@@ -180,9 +190,10 @@ class Equation:
 
     def get_answers(self):
         """
-        Gets answers
+        Gets answers in string format
 
-        :return:
+        :return: output_str
+        :rtype: str
         """
         # access members
         matrix = self.matrix
@@ -201,25 +212,28 @@ class Equation:
         for i in range(matrix_height):
             matrix[i][matrix_width - 1] = (matrix[i][matrix_width - 1] // coeff_gcd) * coeff_lcm
 
-            answer = -(matrix[i][matrix_width - 1] // matrix[i][i])
+            answer = abs(matrix[i][matrix_width - 1] // matrix[i][i])
             answers.append(answer)
-        # the substituted variable = 1
-        answers.append(1)
+        # the substituted variable (coeff_gcd)
+        print('coeff_gcd:', coeff_gcd, 'coeff_lcm', coeff_lcm)
+        answers.append(abs(coeff_lcm // coeff_gcd))
 
         # todo: delete test
-        print(answers)
+        print('answers:', answers)
 
         def stringify_output(answers):
             output_str = ''
             for i in range(len(reactants)):
-                output_str += f"{answers[i]}{reactants[i]} + "
+                ans = answers[i]
+                output_str += f"{'' if ans == 1 else ans}{reactants[i]} + "
 
             # remove the last ' + ' bit
             output_str = re.sub(r'\s\+\s$', '', output_str)
             output_str += '= '
 
             for i in range(len(products)):
-                output_str += f"{answers[len(reactants) + i]}{products[i]} + "
+                ans = answers[len(reactants) + i]
+                output_str += f"{'' if ans == 1 else ans}{products[i]} + "
             # remove the last ' + ' bit
 
             output_str = re.sub(r'\s\+\s$', '', output_str)

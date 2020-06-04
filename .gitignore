@@ -1,5 +1,5 @@
 # directories and files to be ignored by git
 venv/
 .idea/
-__pychache__/
+__pycache__/
 
